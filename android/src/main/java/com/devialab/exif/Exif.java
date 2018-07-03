@@ -1,11 +1,13 @@
 package com.devialab.exif;
 
 import android.database.Cursor;
-import android.media.ExifInterface;
+import android.support.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
 import com.facebook.react.bridge.*;
 import java.io.IOException;
+import java.io.InputStream;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 
@@ -14,7 +16,7 @@ import com.devialab.exif.utils.RealPathUtil;
 public class Exif extends ReactContextBaseJavaModule  {
 
     private static final String[] EXIF_ATTRIBUTES = new String[] {
-        ExifInterface.TAG_APERTURE,
+        ExifInterface.TAG_APERTURE_VALUE,
         ExifInterface.TAG_DATETIME,
         ExifInterface.TAG_DATETIME_DIGITIZED,
         ExifInterface.TAG_EXPOSURE_TIME,
@@ -31,14 +33,15 @@ public class Exif extends ReactContextBaseJavaModule  {
         ExifInterface.TAG_GPS_TIMESTAMP,
         ExifInterface.TAG_IMAGE_LENGTH,
         ExifInterface.TAG_IMAGE_WIDTH,
-        ExifInterface.TAG_ISO,
+        ExifInterface.TAG_ISO_SPEED_RATINGS,
         ExifInterface.TAG_MAKE,
         ExifInterface.TAG_MODEL,
         ExifInterface.TAG_ORIENTATION,
         ExifInterface.TAG_SUBSEC_TIME,
-        ExifInterface.TAG_SUBSEC_TIME_DIG,
-        ExifInterface.TAG_SUBSEC_TIME_ORIG,
-        ExifInterface.TAG_WHITE_BALANCE
+        ExifInterface.TAG_SUBSEC_TIME_DIGITIZED,
+        ExifInterface.TAG_SUBSEC_TIME_ORIGINAL,
+		ExifInterface.TAG_WHITE_BALANCE,
+		ExifInterface.TAG_COPYRIGHT
     };
 
     public Exif(ReactApplicationContext reactContext) {
@@ -89,7 +92,11 @@ public class Exif extends ReactContextBaseJavaModule  {
     }
 
     private ExifInterface createExifInterface(String uri) throws Exception {
-        if (uri.startsWith("content://")) {
+		if(uri.startsWith("asset:/")){
+			InputStream inputStream = getReactApplicationContext().getAssets().open(uri.replace("asset:/", ""));
+			return new ExifInterface(inputStream);
+		}
+		else if (uri.startsWith("content://")) {
             uri = RealPathUtil.getRealPathFromURI(getReactApplicationContext(), Uri.parse(uri));
         }
 
